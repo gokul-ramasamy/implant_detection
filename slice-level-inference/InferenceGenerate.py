@@ -118,6 +118,7 @@ class CTVITDataset(Dataset):
 # Getting the arguments and parsing them
 parser = argparse.ArgumentParser()
 parser.add_argument("--diff_write_path")
+parser.add_argument("--recon_write_path")
 parser.add_argument("--device")
 parser.add_argment("--model_weights")
 parser.add_argument("--csv_file")
