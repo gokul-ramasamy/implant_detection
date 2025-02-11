@@ -21,6 +21,7 @@ from PIL import Image
 from skimage.transform import resize
 import cv2
 import copy
+import configparser
 
 def get_data_inference(csv_path):
     df = pd.read_csv(csv_path)
@@ -115,21 +116,18 @@ class CTVITDataset(Dataset):
 
         return image, idx
     
-# Getting the arguments and parsing them
 parser = argparse.ArgumentParser()
-parser.add_argument("--diff_write_path")
-parser.add_argument("--recon_write_path")
-parser.add_argument("--device")
-parser.add_argment("--model_weights")
-parser.add_argument("--csv_file")
+parser.add_argument("--config_file",default="config.ini")
+args = parser.parser_args()
 
-args = parser.parse_args()
+config = configparser.ConfigParser()
+config.read(args.config_file)
 
 # Paramters
 imgSize = 512
 VAL_BATCH = 1
-MODEL_WEIGHTS = args.model_weights
-VAL_THRESH_CSV = args.csv_file
+MODEL_WEIGHTS = config['InferenceGenerate']['modelweights']
+VAL_THRESH_CSV = config['InferenceGenerate']['csvfile']
 
 
 val_dict = get_data_inference(VAL_THRESH_CSV)
@@ -171,7 +169,7 @@ model = torch.nn.DataParallel(model)
 # # Device and Loading Weights
 checkpoint = torch.load(MODEL_WEIGHTS, map_location='cpu')
 model.load_state_dict(checkpoint['model_state_dict'])
-device = f'cuda:{args.device}'
+device = f'cuda:{int(config['InferenceGenerate']['devie'])}'
 model = model.module.to(device)
 model.eval()
 
@@ -184,7 +182,7 @@ for data, idx in tqdm(val_dataloader):
     diff = inp - out
     diff = np.squeeze(diff)
 
-    recon_write_folder = args.recon_write_path
-    diff_write_folder = args.diff_write_path
+    recon_write_folder = config['InferenceGenerate']['reconwritepath']
+    diff_write_folder = config['InferenceGenerate']['diffwritepath']
 
     np.save(os.path.join(diff_write_folder, idx[0]+'.npy'), diff)

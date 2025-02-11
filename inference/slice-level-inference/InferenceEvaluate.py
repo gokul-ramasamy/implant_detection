@@ -5,6 +5,7 @@ from tqdm import tqdm
 import skimage
 import os
 import argparse
+import configparser
 
 def cca(binary):
     # binary = skimage.morphology.remove_small_objects(binary, min_size=50)
@@ -19,16 +20,17 @@ def cca_area(cca_img):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--diff_write_path")
-    parser.add_argument("--csv_file")
-    parser.add_argument("--write_path")
-
+    parser.add_argument("--config_file", default="config.ini")
     args = parser.parse_args()
 
-    # Reading the csv file
-    thresh_val_df = pd.read_csv(args.csv_file)
+    config = configparser.ConfigParser()
+    config.read(args.config_file)
 
-    root_folder = args.diff_write_path
+
+    # Reading the csv file
+    thresh_val_df = pd.read_csv(config['InferenceEvaluate']['csvfile'])
+
+    root_folder = config['InferenceEvaluate']['diffwritepath']
 
     a_threshold = 0.6
     thresh = 166
@@ -52,4 +54,4 @@ if __name__ == '__main__':
             thresh_val_df.loc[ind, 'Prediction'] = 0
 
 
-    thresh_val_df.to_csv(args.write_path)
+    thresh_val_df.to_csv(config['InferenceEvaluate']['writepath'])

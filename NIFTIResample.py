@@ -4,7 +4,7 @@ import numpy as np
 import os
 from tqdm import tqdm
 import argparse
-
+import configparser
 
 ### Function to resample the volume
 def sitk_resample(itk_image, out_spacing=[1.0,1.0,1.0], interpolation=None):
@@ -85,15 +85,15 @@ def registration(df, root_folder, csv_path):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-
-    parser.add_argument("--input_csv_path")
-    parser.add_argument("--output_csv_path")
-    parser.add_arguement("--nifti_write_path")
-
+    parser.add_argument("--config_file",default='./inference/series-level-inferen/config.ini')
     args = parser.parse_args()
 
-    df = pd.read_csv(args.input_csv_path)
-    csv_path = args.output_csv_path
-    root_folder = args.nifti_write_path
+    config = configparser.ConfigParser()
+    config.read(args.config_file)
+
+
+    df = pd.read_csv(config['Resample']['inputcsvpath'])
+    csv_path = config['Resample']['outputcsvpath']
+    root_folder = config['Resample']['niftiwritepath']
 
     registration(df, root_folder, csv_path)

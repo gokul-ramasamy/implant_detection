@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 import cc3d
 from tqdm import tqdm
 import argparse
+import configparser
 import os
 
 from warnings import simplefilter
@@ -72,13 +73,13 @@ def cc_analysis(arr: np.array, dusting_threshold: int) -> int:
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--diff_write_path")
-    parser.add_argument("--csv_file")
-    parser.add_argument("--write_path")
-
+    parser.add_argument("--config_file", default="config.ini")
     args = parser.parse_args()
 
-    test_csv = args.csv_file
+    config = configparser.ConfigParser()
+    config.read(args.config_file)
+
+    test_csv = config['InferenceEvaluate']['csvfile']
     # Read the CSV files and print the statistics
     test_df = pd.read_csv(test_csv)
     # Let us remove the Unnamed columns
@@ -87,7 +88,7 @@ if __name__ == '__main__':
     for ind in tqdm(test_df.index.values.tolist()):
         nifti_path = test_df.loc[ind, 'ResampledNIFTIPath']
         nifti_ind = nifti_path.split('/')[-1].split('.')[0]
-        root_folder = args.diff_write_path
+        root_folder = config['InferenceEvaluate']['diffwritepath']
 
         # Reading and preprocessing the volume
         resize_shape = (256,256) ## Paramter
@@ -108,4 +109,4 @@ if __name__ == '__main__':
         else:
             test_df.loc[ind, 'Prediction'] = 0
 
-    test_df.to_csv(args.write_path)
+    test_df.to_csv(config['InferenceEvaluate']['writepath'])

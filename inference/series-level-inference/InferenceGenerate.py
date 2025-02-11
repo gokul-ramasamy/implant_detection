@@ -22,26 +22,23 @@ import nibabel as nib
 from PIL import Image
 from tqdm import tqdm
 import cv2
+import configparser
 
-
-# Getting the arguments and parsing them
 parser = argparse.ArgumentParser()
-parser.add_argument("--diff_write_path")
-parser.add_argument("--recon_write_path")
-parser.add_argument("--device")
-parser.add_argment("--model_weights")
-parser.add_argument("--csv_file")
+parser.add_argument("--config_file",default="config.ini")
+args = parser.parser_args()
 
-args = parser.parse_args()
+config = configparser.ConfigParser()
+config.read(args.config_file)
 
 
 # Parameters
 imgSize = 256
 VAL_BATCH = 1
-MODEL_WEIGHTS = args.model_weights
+MODEL_WEIGHTS = config['InferenceGenerate']['modelweights']
 
 # Getting the CSV files
-test_csv = args.csv_file
+test_csv = config['InferenceGenerate']['csvfile']
 # Read the CSV file
 test_df = pd.read_csv(test_csv)
 # Let us remove the Unnamed columns
@@ -73,7 +70,7 @@ model = torch.nn.DataParallel(model)
 # # Device and Loading Weights
 checkpoint = torch.load(MODEL_WEIGHTS, map_location='cpu')
 model.load_state_dict(checkpoint['model_state_dict'])
-device = f'cuda:{args.device}'
+device = f'cuda:{int(config['InferenceGenerate']['device'])}'
 model = model.module.to(device)
 model.eval()
 
@@ -233,8 +230,8 @@ for ind in tqdm(df.index.values.tolist()):
     final_diff = final_inputs - final_reconstructions
 
 
-    diff_write_path = os.path.join(args.diff_write_path, write_index+'.npy')
+    diff_write_path = os.path.join(config['InferenceGenerate']['diffwritepath'], write_index+'.npy')
     np.save(diff_write_path, final_diff)
 
-    recon_write_path = os.path.join(args.recon_write_path, write_index+'.npy')
+    recon_write_path = os.path.join(config['InferenceGenerate']['reconwritepath'], write_index+'.npy')
     np.save(recon_write_path, final_reconstructions)
