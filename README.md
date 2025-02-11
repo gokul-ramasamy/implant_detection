@@ -30,7 +30,7 @@
 
 2. First, resampled the NIFTIs
 
-    ```python NIFTIResampled.py --config_file inference/series-level-inference/config.ini``
+    ```python NIFTIResampled.py --config_file inference/series-level-inference/config.ini```
 
 3. Now run the inference generation code. This would required the output csv from the resampling step
 
